@@ -10,6 +10,8 @@ const App = () => {
   const { insertNode, deleteNode, updateNode } = useTraverseTree();
 
   const handleInsertNode = (folderId, item, isFolder) => {
+      console.log(folderId, item, isFolder);
+      
       const finalTree = insertNode(explorerData, folderId, item, isFolder);
       setExplorerData(finalTree);
   };
@@ -23,6 +25,10 @@ const App = () => {
       const finalTree = updateNode(explorerData, nodeId, newName);
       setExplorerData(finalTree);
   };
+
+
+  console.log(explorerData);
+  
 
   return (
       <div>
