@@ -1,0 +1,126 @@
+1. Create Folder/File (POST /create)
+
+URL: http://localhost:5000/create
+Body: 
+{
+  "parentId": "1",
+  "name": "src",
+  "type": "folder"
+}
+
+
+{
+  "parentId": "1",
+  "name": "package.json",
+  "type": "file"
+}
+
+{
+  "parentId": "1",
+  "name": "car.jpg",
+  "type": "image"
+}
+
+
+================================================================================================================================
+
+2. Rename Folder/File (POST /rename)
+
+URL: http://localhost:5000/rename
+// replace id with the folder/file ID you want to rename
+{
+  "id": "1",                      
+  "newName": "Renamed Folder"
+}
+
+================================================================================================================================
+
+
+3. Delete Folder/File (DELETE /delete)
+
+
+URL: http://localhost:5000/delete
+replace id with the folder/file ID you want to delete
+
+{
+  "id": "1"
+}
+
+
+
+================================================================================================================================
+
+
+4. Retrieve Folder Contents (GET /read):
+
+URL: http://localhost:5000/read?parentId=1
+Replace parentId=1 with the ID of the folder you want to read.
+result : 
+{
+    "id": "d1dc7d37-275a-4f79-b2d1-8c3def3df411",
+    "name": "3pl",
+    "isFolder": true,
+    "items": [
+        {
+            "id": "e26d02d6-710d-48e6-b56e-6276b9c7452a",
+            "name": "index.html",
+            "isFolder": false,
+            "items": []
+        },
+        {
+            "id": "8d479fec-d7ea-4ee5-8928-53aca70a7ebe",
+            "name": "Folder1",
+            "isFolder": true,
+            "items": []
+        }
+    ]
+}
+
+
+
+
+URL: http://localhost:5000/read?parentId=1&expandNested=true
+Replace parentId=1 with the ID of the folder you want to read.
+
+result : 
+{
+    "id": "d1dc7d37-275a-4f79-b2d1-8c3def3df411",
+    "name": "3pl",
+    "isFolder": true,
+    "items": [
+        {
+            "id": "e26d02d6-710d-48e6-b56e-6276b9c7452a",
+            "name": "index.html",
+            "isFolder": false,
+            "items": []
+        },
+        {
+            "id": "8d479fec-d7ea-4ee5-8928-53aca70a7ebe",
+            "name": "Folder1",
+            "isFolder": true,
+            "items": [
+                {
+                    "id": "54876431-47f9-4caf-a739-f0e2e316a916",
+                    "name": "Me",
+                    "isFolder": false,
+                    "items": []
+                },
+                {
+                    "id": "d39f6d6b-ba18-43fd-8337-8b761a4206ea",
+                    "name": "SendMe",
+                    "isFolder": true,
+                    "items": []
+                }
+            ]
+        }
+    ]
+}
+
+
+
+
+
+
+
+
+

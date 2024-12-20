@@ -1,0 +1,70 @@
+{
+  "id": "1",
+  "name": "root",
+  "isFolder": true,
+  "items": [
+    {
+      "id": "3ce25928-28dc-4d3a-9517-c0e672e68525",
+      "name": "dist",
+      "isFolder": true,
+      "items": [
+        {
+          "id": "d1dc7d37-275a-4f79-b2d1-8c3def3df411",
+          "name": "3pl",
+          "isFolder": true,
+          "items": [
+            {
+              "id": "e26d02d6-710d-48e6-b56e-6276b9c7452a",
+              "name": "index.html",
+              "isFolder": false,
+              "items": []
+            },
+            {
+              "id": "8d479fec-d7ea-4ee5-8928-53aca70a7ebe",
+              "name": "Folder1",
+              "isFolder": true,
+              "items": [
+                {
+                  "id": "54876431-47f9-4caf-a739-f0e2e316a916",
+                  "name": "Me",
+                  "isFolder": false,
+                  "items": []
+                },
+                {
+                  "id": "d39f6d6b-ba18-43fd-8337-8b761a4206ea",
+                  "name": "SendMe",
+                  "isFolder": true,
+                  "items": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "21edd04e-5f11-4b60-ad57-8ea1ffee4eaf",
+          "name": "myNotes.txt",
+          "isFolder": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "id": "d01ca31f-b465-470d-9de0-4e079f29aaa9",
+      "name": "src",
+      "isFolder": true,
+      "items": []
+    },
+    {
+      "id": "ac9dc0db-0bf5-4492-8c5e-e8a2d019e91b",
+      "name": "public",
+      "isFolder": true,
+      "items": []
+    },
+    {
+      "id": "cdcde20a-c2d9-4f27-ac2b-bdf1e53cebbb",
+      "name": "package.json",
+      "isFolder": false,
+      "items": []
+    }
+  ]
+}

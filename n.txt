@@ -1,0 +1,5 @@
+Your approach to retrieve folder contents dynamically is logical and efficient for large folder structures. Instead of sending all nested folder contents at once, you only fetch the required data when a folder is expanded. This approach minimizes payload size, optimizes performance, and is especially suitable for file explorers or hierarchical views in web applications.
+
+
+
+The issue is that your fetchFolderContents action replaces the entire explorerData state, which causes previously loaded folders to disappear. To fix this, you need to merge the fetched data into the existing state instead of overwriting it.
