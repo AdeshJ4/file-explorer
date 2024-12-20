@@ -7,7 +7,7 @@ const useTraverseTree = () => {
                 isFolder,
                 items: []
             });
-            return tree;
+            // return tree;
         }
 
         const latestNode = tree.items.map((ob) => {

@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
+import { ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
+
 
 const Folder = ({ explorer, handleInsertNode, handleDeleteNode, handleUpdateNode }) => {
+
+    console.log('explorer', explorer)
     const [expand, setExpand] = useState(false);
     const [showInput, setShowInput] = useState({ visible: false, isFolder: null });
     const [isRenaming, setIsRenaming] = useState(false);
@@ -32,6 +36,11 @@ const Folder = ({ explorer, handleInsertNode, handleDeleteNode, handleUpdateNode
                 onClick={() => setExpand((prev) => !prev)}
             >
                 <div className="flex items-center space-x-2">
+                {explorer?.isFolder && explorer?.items.length > 0 && (
+                        expand ?
+                            <ChevronDownIcon className="h-5 w-5 inline-block" /> :
+                            <ChevronRightIcon className="h-5 w-5 inline-block" />
+                    )}
                     <span className="text-xl">{explorer.isFolder ? "📁" : "📄"}</span>
                     {isRenaming ? (
                         <input
