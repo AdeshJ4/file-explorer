@@ -7,7 +7,7 @@ import Loader from './components/common/Loader';
 const App = () => {
   const dispatch = useDispatch();
   const { explorerData, isLoading, isError } = useSelector(state => state.explorer);
-  const [selectedFolderId, setSelectedFolderId] = useState("1");
+  const [selectedFolderId, setSelectedFolderId] = useState("6768f9c22784f2983f94111b");
   const [selectedFolderIsFolder, setSelectedFolderIsFolder] = useState(true);
   const [loadedFolders, setLoadedFolders] = useState([]);
   const [openFolders, setOpenFolders] = useState({});
@@ -57,6 +57,9 @@ const App = () => {
   if (isError) {
     return <div>Error loading data. Please try again later.</div>;
   }
+
+  console.log('App explorerData', explorerData);
+  
 
   return (
     <div className="p-5">

@@ -25,3 +25,110 @@ the read API should return only the direct contents of the requested folder, not
 
 FIle -> Create(upload, delete)
 FOlder -> CRUD
+
+
+
+
+
+{
+  "_id": {
+    "$oid": "6768f9c22784f2983f94111b"
+  },
+  "name": "root",
+  "isFolder": true,
+  "items": [
+    {
+      "_id": {
+        "$oid": "6768fac22784f2983f941124"
+      },
+      "name": "src Folder",
+      "isFolder": true,
+      "items": [
+        {
+          "_id": {
+            "$oid": "6768fb922784f2983f941133"
+          },
+          "name": "common",
+          "isFolder": true,
+          "items": [
+            {
+              "_id": {
+                "$oid": "6768fbea2784f2983f94113f"
+              },
+              "name": "courses",
+              "isFolder": true,
+              "items": []
+            },
+            {
+              "_id": {
+                "$oid": "6768fbf92784f2983f941143"
+              },
+              "name": "books",
+              "isFolder": true,
+              "items": []
+            },
+            {
+              "_id": {
+                "$oid": "6768fc102784f2983f941147"
+              },
+              "name": "common.jsx",
+              "isFolder": false,
+              "items": []
+            }
+          ]
+        },
+        {
+          "_id": {
+            "$oid": "6768fbbc2784f2983f941137"
+          },
+          "name": "api",
+          "isFolder": true,
+          "items": []
+        },
+        {
+          "_id": {
+            "$oid": "6768fbd32784f2983f94113b"
+          },
+          "name": "app.js",
+          "isFolder": false,
+          "items": []
+        }
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "6768fb6d2784f2983f94112f"
+      },
+      "name": "package.json",
+      "isFolder": false,
+      "items": []
+    },
+    {
+      "_id": {
+        "$oid": "6768fedac0754e213d47b2ee"
+      },
+      "name": "dist folder",
+      "isFolder": true,
+      "items": [
+        {
+          "_id": {
+            "$oid": "6768fef3c0754e213d47b2f2"
+          },
+          "name": "F1 Folder",
+          "isFolder": true,
+          "items": [
+            {
+              "_id": {
+                "$oid": "6768ff2bc0754e213d47b2fe"
+              },
+              "name": "Aramy",
+              "isFolder": true,
+              "items": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "__v": 0
+}
