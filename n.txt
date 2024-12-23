@@ -1,8 +1,12 @@
-Your approach to retrieve folder contents dynamically is logical and efficient for large folder structures. Instead of sending all nested folder contents at once, you only fetch the required data when a folder is expanded. This approach minimizes payload size, optimizes performance, and is especially suitable for file explorers or hierarchical views in web applications.
+Your approach to retrieve folder contents dynamically is logical and efficient for large folder structures. 
+Instead of sending all nested folder contents at once, you only fetch the required data when a folder is expanded. 
+This approach minimizes payload size, optimizes performance, and is especially suitable for file explorers or hierarchical views 
+in web applications.
 
 
 
-The issue is that your fetchFolderContents action replaces the entire explorerData state, which causes previously loaded folders to disappear. To fix this, you need to merge the fetched data into the existing state instead of overwriting it.
+The issue is that your fetchFolderContents action replaces the entire explorerData state, which causes previously loaded folders 
+to disappear. To fix this, you need to merge the fetched data into the existing state instead of overwriting it.
 
 
 Don't make api call if folder is empty.
@@ -12,9 +16,10 @@ Don't make api call if file since we don't have anything inside it.
 
 
 
-It looks like you're trying to update the Redux state with new folder data received from the server, but the final data isn't reflecting the changes as expected. 
+It looks like you're trying to update the Redux state with new folder data received from the server, but the final data isn't 
+reflecting the changes as expected. 
 
-
+the read API should return only the direct contents of the requested folder, not the entire nested folder structure
 
 
 
