@@ -3,3 +3,20 @@ Your approach to retrieve folder contents dynamically is logical and efficient f
 
 
 The issue is that your fetchFolderContents action replaces the entire explorerData state, which causes previously loaded folders to disappear. To fix this, you need to merge the fetched data into the existing state instead of overwriting it.
+
+
+Don't make api call if folder is empty.
+
+Don't make api call if file since we don't have anything inside it.
+
+
+
+
+It looks like you're trying to update the Redux state with new folder data received from the server, but the final data isn't reflecting the changes as expected. 
+
+
+
+
+
+FIle -> Create(upload, delete)
+FOlder -> CRUD

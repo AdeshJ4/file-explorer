@@ -7,7 +7,7 @@ const API_BASE_URL = 'http://localhost:5000';
 
 
 const initialState = {
-  explorerData: null,
+  explorerData: {},
   isLoading: false,
   isError: false,
   errorMessage: '',
@@ -85,37 +85,90 @@ const explorerSlice = createSlice({
       state.isError = false;
       state.errorMessage = '';
     });
-    builder.addCase(fetchFolderContents.fulfilled, (state, action) => {
 
-      const oldData = JSON.parse(JSON.stringify(state.explorerData)); 
-      console.log('old data ', oldData); // null
-      console.log('new data ', action.payload);  // {id: '1', name: 'root', isFolder: true, items: Array(4)}
+
+    // builder.addCase(fetchFolderContents.fulfilled, (state, action) => {
+    //   let oldData = JSON.parse(JSON.stringify(state.explorerData)); 
+
+    //   console.log('old Data ', oldData);
+    //   console.log('New Data ', action.payload);
       
-      const updatedItems = oldData?.items?.map(obj =>
-        obj.id === action.payload.id ? action.payload : obj
-      );
-      console.log('updatedItems', updatedItems);  // undefined
       
-      const data = {};
-      if(oldData === null){console.log(true);
-        data = {
-          ...action.payload,
-          items: updatedItems || [],
-        };
+  
+    //   const updateTree = (items, payload) => {
+    //     // if (!items || items.length === 0) return items;
+    
+    //     return items?.map((item) => {
+    //       if (item.id === payload.id) {
+    //         return { ...payload };
+    //       } else if (item.items && item.items.length > 0) {
+    //         return { ...item, items: updateTree(item.items, payload) };
+    //       } else {
+    //         return item;
+    //       }
+    //     });
+    //   };
+    
+    //   const updatedItems = updateTree(oldData?.items, action.payload);
+
+    //   console.log('updatedItems', updatedItems);
       
-      }else{
-        data = {
+    
+    //   if (!updatedItems) {
+    //     oldData = action.payload;        
+    //   } else {
+    //     oldData = {
+    //       ...oldData,
+    //       items: updatedItems,
+    //     };
+    //   }
+
+    //   console.log('final Data ', oldData);
+    //   state.explorerData = oldData;
+    //   state.isLoading = false;
+    // });
+
+
+    builder.addCase(fetchFolderContents.fulfilled, (state, action) => {
+      let oldData = JSON.parse(JSON.stringify(state.explorerData)); 
+
+      console.log('old Data ', oldData);
+      console.log('New Data ', action.payload);
+      
+      
+  
+      const updateTree = (items, payload) => {
+        return items?.map((item) => {
+          if (item.id === payload.id) {
+            return { ...payload };
+          } else if (item.items && item.items.length > 0) {
+            return { ...item, items: updateTree(item.items, payload) };
+          } else {
+            return item;
+          }
+        });
+      };
+    
+      const updatedItems = updateTree(oldData?.items, action.payload);
+
+      console.log('updatedItems', updatedItems);
+      
+    
+      if (!updatedItems) {
+        oldData = action.payload;        
+      } else {
+        oldData = {
           ...oldData,
-          items: updatedItems || [],
+          items: updatedItems,
         };
       }
-      
-      console.log('data', data);
-      
-      // state.explorerData = action.payload;
-      state.explorerData = data;
+
+      console.log('final Data ', oldData);
+      state.explorerData = oldData;
       state.isLoading = false;
     });
+
+
     builder.addCase(fetchFolderContents.rejected, (state, action) => {
       state.isLoading = false;
       state.isError = true;
