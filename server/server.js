@@ -1,21 +1,25 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const { v4: uuidv4 } = require('uuid');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const cors = require('cors');
 
 const app = express();
 const PORT = 5000;
 
-// MongoDB connection
-mongoose.connect('mongodb://localhost:27017/explorer', { useNewUrlParser: true, useUnifiedTopology: true });
+require('./startup/dbConnection')();
 
-// Define the schema for a folder/file
+
 const nodeSchema = new mongoose.Schema({
   name: String,
   isFolder: Boolean,
-  items: [this], // Recursive schema for nested items
+  filePath: String, // For storing file paths
+  fileType: String, // For storing file type (e.g., "pdf", "jpg")
+  items: [this],
 });
+
 
 
 // Model for the file structure
@@ -23,6 +27,28 @@ const Node = mongoose.model('Node', nodeSchema);
 
 app.use(cors());
 app.use(bodyParser.json());
+
+
+// Set up storage for Multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = './uploads/';
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir);
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+
+const upload = multer({ storage });
+
+
+
+
 
 // Helper function to find a node by ID recursively
 const findNodeByIdRecursive = (node, id) => {
@@ -87,7 +113,7 @@ app.post('/create', async (req, res) => {
 
 
 
-
+// 1. Rename Folder/File
 app.post('/rename', async (req, res) => {
   const { id, newName } = req.body;
   try {
@@ -153,9 +179,6 @@ app.delete('/delete', async (req, res) => {
 
     const rootObject = root.toObject();
 
-    // Log the tree structure before attempting deletion
-    console.log('Tree Before Deletion:', JSON.stringify(rootObject, null, 2));
-
     const nodeDeleted = deleteNodeByIdRecursive(rootObject, id);
     if (!nodeDeleted) {
       return res.status(400).json({ error: 'Item not found.' });
@@ -207,82 +230,6 @@ app.get('/read', async (req, res) => {
 
 
 
-// app.get('/read', async (req, res) => {
-//   const { folderId } = req.query;
-
-//   try {
-//     // Validate folderId
-//     // if (!folderId || !folderId.match(/^[0-9a-fA-F]{24}$/)) {
-//     //   return res.status(400).json({ error: 'Invalid folder ID.' });
-//     // }
-
-//     // Retrieve the root structure from the database
-//     const root = await Node.findOne({ _id: "6768f9c22784f2983f94111b" }); // Root folder ID
-//     if (!root) {
-//       return res.status(400).json({ error: 'Root folder not found.' });
-//     }
-
-//     // Convert Mongoose Document to Plain JavaScript Object
-//     const rootObject = root.toObject();
-
-//     // Helper function to find the folder by ID recursively
-//     const findFolder = (node, folderId) => {
-//       if (node._id.toString() === folderId) return node; // Match by _id
-//       for (const child of node.items || []) {
-//         if (child.isFolder) {
-//           const found = findFolder(child, folderId);
-//           if (found) return found;
-//         }
-//       }
-//       return null;
-//     };
-
-//     const folder = findFolder(rootObject, folderId);
-
-//     if (folder) {
-//       // Ensure all items are fully populated recursively
-//       const populateItems = (node) => {
-//         return {
-//           ...node,
-//           items: (node.items || []).map((item) =>
-//             item.isFolder ? populateItems(item) : item
-//           ),
-//         };
-//       };
-
-//       const populatedFolder = populateItems(folder);
-
-//       res.json(populatedFolder);
-//     } else {
-//       res.status(404).json({ error: 'Folder not found.' });
-//     }
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: 'Internal server error.' });
-//   }
-// });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // 5. Save Entire Folder Structure
 app.post('/updateStructure', async (req, res) => {
@@ -299,6 +246,48 @@ app.post('/updateStructure', async (req, res) => {
 
 
 
+// 6. Upload File
+app.post('/upload', upload.single('file'), async (req, res) => {
+  const { parentId } = req.body;
+  const file = req.file;
+
+  try {
+    const root = await Node.findOne({ name: 'root' });
+    if (!root) {
+      return res.status(400).json({ error: 'Root folder not found.' });
+    }
+
+    const rootObject = root.toObject();
+    const parentNode = findNodeByIdRecursive(rootObject, parentId);
+
+    if (parentNode && parentNode.isFolder) {
+      const newFileNode = {
+        _id: new mongoose.Types.ObjectId(),
+        name: file.originalname,
+        isFolder: false,
+        filePath: file.path,
+        fileType: path.extname(file.originalname).slice(1),
+        items: [],
+      };
+
+      parentNode.items.push(newFileNode);
+
+      await Node.updateOne({ name: 'root' }, { $set: { items: rootObject.items } });
+
+      res.json({
+        message: 'File uploaded successfully!',
+        file: newFileNode,
+      });
+    } else {
+      // Delete the uploaded file if the parent folder is invalid
+      fs.unlinkSync(file.path);
+      res.status(400).json({ error: 'Parent folder not found or invalid.' });
+    }
+  } catch (err) {
+    if (file) fs.unlinkSync(file.path); // Clean up the uploaded file in case of an error
+    res.status(500).json({ error: err.message });
+  }
+});
 
 
 // Initialize root folder if not already present
