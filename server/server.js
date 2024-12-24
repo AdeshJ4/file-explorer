@@ -228,6 +228,59 @@ app.get('/read', async (req, res) => {
   }
 });
 
+/*
+
+image upload functionlity 
+
+const multer = require('multer');
+const storage = multer.memoryStorage(); // Store files temporarily in memory
+const upload = multer({ storage });
+
+app.post('/upload', upload.array('files', 10), async (req, res) => {
+  const { parentId } = req.body;
+  const files = req.files; // Array of files
+
+  if (!files || files.length === 0) {
+    return res.status(400).json({ error: 'No files uploaded.' });
+  }
+
+  try {
+    const uploadPromises = files.map((file) =>
+      cloudinary.uploader.upload_stream(
+        { resource_type: 'auto' },
+        (error, result) => {
+          if (error) throw error;
+          return result;
+        }
+      ).end(file.buffer)
+    );
+
+    const uploadResults = await Promise.all(uploadPromises);
+
+    const uploadedFiles = uploadResults.map((result) => ({
+      name: result.original_filename,
+      url: result.secure_url,
+    }));
+
+    // Optionally, save `uploadedFiles` metadata to the database here
+
+    res.json({ message: 'Files uploaded successfully!', files: uploadedFiles });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+client : 
+
+<a href="https://res.cloudinary.com/demo/image/upload/sample.jpg" download>
+  Download Image
+</a>
+
+
+*/
+
 
 
 
@@ -247,9 +300,13 @@ app.post('/updateStructure', async (req, res) => {
 
 
 // 6. Upload File
-app.post('/upload', upload.single('file'), async (req, res) => {
+app.post('/upload', upload.array('files', 10), async (req, res) => {
   const { parentId } = req.body;
-  const file = req.file;
+  const files = req.files; // Array of files
+
+  if (!files || files.length === 0) {
+    return res.status(400).json({ error: 'No files uploaded.' });
+  }
 
   try {
     const root = await Node.findOne({ name: 'root' });
@@ -261,30 +318,32 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     const parentNode = findNodeByIdRecursive(rootObject, parentId);
 
     if (parentNode && parentNode.isFolder) {
-      const newFileNode = {
+      const newFileNodes = files.map((file) => ({
         _id: new mongoose.Types.ObjectId(),
         name: file.originalname,
         isFolder: false,
         filePath: file.path,
         fileType: path.extname(file.originalname).slice(1),
         items: [],
-      };
+      }));
 
-      parentNode.items.push(newFileNode);
+      // Add all new file nodes to the parent folder
+      parentNode.items.push(...newFileNodes);
 
       await Node.updateOne({ name: 'root' }, { $set: { items: rootObject.items } });
 
       res.json({
-        message: 'File uploaded successfully!',
-        file: newFileNode,
+        message: 'Files uploaded successfully!',
+        files: newFileNodes,
       });
     } else {
-      // Delete the uploaded file if the parent folder is invalid
-      fs.unlinkSync(file.path);
+      // Delete uploaded files if the parent folder is invalid
+      files.forEach((file) => fs.unlinkSync(file.path));
       res.status(400).json({ error: 'Parent folder not found or invalid.' });
     }
   } catch (err) {
-    if (file) fs.unlinkSync(file.path); // Clean up the uploaded file in case of an error
+    // Clean up uploaded files in case of an error
+    files.forEach((file) => fs.unlinkSync(file.path));
     res.status(500).json({ error: err.message });
   }
 });
