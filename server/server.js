@@ -6,6 +6,10 @@ const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
 
+const cloudinary = require('./helpers/cloudinary'); 
+
+
+
 const app = express();
 const PORT = 5000;
 
@@ -101,12 +105,12 @@ app.post('/create', async (req, res) => {
 
       await Node.updateOne({ name: 'root' }, { $set: { items: rootObject.items } });
 
-      res.json({ message: `${type} created successfully!` });
+      return res.json({ message: `${type} created successfully!` });
     } else {
-      res.status(400).json({ error: 'Parent folder not found or invalid.' });
+      return res.status(400).json({ error: 'Parent folder not found or invalid.' });
     }
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -131,12 +135,12 @@ app.post('/rename', async (req, res) => {
       // Save the updated structure back to the database
       await Node.updateOne({ _id: root._id }, { $set: { items: root.items } });
 
-      res.json({ message: 'Item renamed successfully!' });
+      return res.json({ message: 'Item renamed successfully!' });
     } else {
-      res.status(400).json({ error: 'Item not found.' });
+      return res.status(400).json({ error: 'Item not found.' });
     }
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -187,9 +191,9 @@ app.delete('/delete', async (req, res) => {
     // Save the updated structure back to the database
     await Node.updateOne({ _id: root._id }, { $set: { items: rootObject.items } });
 
-    res.json({ message: 'Item deleted successfully!' });
+    return res.json({ message: 'Item deleted successfully!' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -198,15 +202,45 @@ app.delete('/delete', async (req, res) => {
 
 
 // 4. Retrieve Folder Contents
+// app.get('/read', async (req, res) => {
+//   const { parentId } = req.query;
+//   try {
+//     // Fetch the folder by ID
+//     const folder = await findNodeById(parentId);
+
+//     console.log('folder', folder);
+    
+
+//     if (folder) {
+//       // Extract only the immediate children of the folder
+//       const response = {
+//         _id: folder._id,
+//         name: folder.name,
+//         isFolder: folder.isFolder,
+//         items: folder.items.map(item => ({
+//           _id: item._id,
+//           name: item.name,
+//           isFolder: item.isFolder,
+//         })),
+//       };
+
+//       return res.json(response);
+//     } else {
+//       return res.status(400).json({ error: 'Folder not found.' });
+//     }
+//   } catch (err) {
+//     console.error('Error:', err); // Log error details
+//     return res.status(500).json({ error: err.message });
+//   }
+// });
 app.get('/read', async (req, res) => {
   const { parentId } = req.query;
-
   try {
     // Fetch the folder by ID
     const folder = await findNodeById(parentId);
 
     if (folder) {
-      // Extract only the immediate children of the folder
+      // Map through the folder items and include filePath for files
       const response = {
         _id: folder._id,
         name: folder.name,
@@ -215,72 +249,19 @@ app.get('/read', async (req, res) => {
           _id: item._id,
           name: item.name,
           isFolder: item.isFolder,
+          ...(item.isFolder ? {} : { filePath: item.filePath || '' }),  // Add filePath only for files
         })),
       };
 
-      res.json(response);
+      return res.json(response);
     } else {
-      res.status(400).json({ error: 'Folder not found.' });
+      return res.status(400).json({ error: 'Folder not found.' });
     }
   } catch (err) {
     console.error('Error:', err); // Log error details
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
-
-/*
-
-image upload functionlity 
-
-const multer = require('multer');
-const storage = multer.memoryStorage(); // Store files temporarily in memory
-const upload = multer({ storage });
-
-app.post('/upload', upload.array('files', 10), async (req, res) => {
-  const { parentId } = req.body;
-  const files = req.files; // Array of files
-
-  if (!files || files.length === 0) {
-    return res.status(400).json({ error: 'No files uploaded.' });
-  }
-
-  try {
-    const uploadPromises = files.map((file) =>
-      cloudinary.uploader.upload_stream(
-        { resource_type: 'auto' },
-        (error, result) => {
-          if (error) throw error;
-          return result;
-        }
-      ).end(file.buffer)
-    );
-
-    const uploadResults = await Promise.all(uploadPromises);
-
-    const uploadedFiles = uploadResults.map((result) => ({
-      name: result.original_filename,
-      url: result.secure_url,
-    }));
-
-    // Optionally, save `uploadedFiles` metadata to the database here
-
-    res.json({ message: 'Files uploaded successfully!', files: uploadedFiles });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-
-
-client : 
-
-<a href="https://res.cloudinary.com/demo/image/upload/sample.jpg" download>
-  Download Image
-</a>
-
-
-*/
-
 
 
 
@@ -291,18 +272,67 @@ app.post('/updateStructure', async (req, res) => {
   try {
     await Node.deleteMany(); // Clear existing structure
     await Node.create(data); // Save new structure
-    res.json({ message: 'Structure updated successfully!' });
+    return res.json({ message: 'Structure updated successfully!' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
 
 
 // 6. Upload File
+// app.post('/upload', upload.array('files', 10), async (req, res) => {
+//   const { parentId } = req.body;
+//   const files = req.files; // Array of files
+  
+
+//   if (!files || files.length === 0) {
+//     return res.status(400).json({ error: 'No files uploaded.' });
+//   }
+
+//   try {
+//     const root = await Node.findOne({ name: 'root' });
+//     if (!root) {
+//       return res.status(400).json({ error: 'Root folder not found.' });
+//     }
+
+//     const rootObject = root.toObject();
+//     const parentNode = findNodeByIdRecursive(rootObject, parentId);
+
+//     if (parentNode && parentNode.isFolder) {
+//       const newFileNodes = files.map((file) => ({
+//         _id: new mongoose.Types.ObjectId(),
+//         name: file.originalname,
+//         isFolder: false,
+//         filePath: file.path,
+//         fileType: path.extname(file.originalname).slice(1),
+//         items: [],
+//       }));
+
+//       // Add all new file nodes to the parent folder
+//       parentNode.items.push(...newFileNodes);
+
+//       await Node.updateOne({ name: 'root' }, { $set: { items: rootObject.items } });
+
+//       res.json({
+//         message: 'Files uploaded successfully!',
+//         files: newFileNodes,
+//       });
+//     } else {
+//       // Delete uploaded files if the parent folder is invalid
+//       files.forEach((file) => fs.unlinkSync(file.path));
+//       return res.status(400).json({ error: 'Parent folder not found or invalid.' });
+//     }
+//   } catch (err) {
+//     // Clean up uploaded files in case of an error
+//     files.forEach((file) => fs.unlinkSync(file.path));
+//     return res.status(500).json({ error: err.message });
+//   }
+// });
+
 app.post('/upload', upload.array('files', 10), async (req, res) => {
   const { parentId } = req.body;
-  const files = req.files; // Array of files
+  const files = req.files;
 
   if (!files || files.length === 0) {
     return res.status(400).json({ error: 'No files uploaded.' });
@@ -318,35 +348,52 @@ app.post('/upload', upload.array('files', 10), async (req, res) => {
     const parentNode = findNodeByIdRecursive(rootObject, parentId);
 
     if (parentNode && parentNode.isFolder) {
-      const newFileNodes = files.map((file) => ({
-        _id: new mongoose.Types.ObjectId(),
-        name: file.originalname,
-        isFolder: false,
-        filePath: file.path,
-        fileType: path.extname(file.originalname).slice(1),
-        items: [],
-      }));
+      const uploadedFileNodes = [];
 
-      // Add all new file nodes to the parent folder
-      parentNode.items.push(...newFileNodes);
+      // Upload each file to Cloudinary
+      for (const file of files) {
+        const result = await cloudinary.uploader.upload(file.path, {
+          folder: 'uploads',  // Optional folder in Cloudinary
+          resource_type: 'auto',  // Supports various file types (image, video, etc.)
+        });
 
+        // Create new file node
+        const newFileNode = {
+          _id: new mongoose.Types.ObjectId(),
+          name: file.originalname,
+          isFolder: false,
+          filePath: result.secure_url,  // Cloudinary URL
+          fileType: path.extname(file.originalname).slice(1),
+          items: [],
+        };
+
+        uploadedFileNodes.push(newFileNode);
+
+        // Clean up local file after successful upload
+        fs.unlinkSync(file.path);
+      }
+
+      // Add files to parent folder
+      parentNode.items.push(...uploadedFileNodes);
+
+      // Update database
       await Node.updateOne({ name: 'root' }, { $set: { items: rootObject.items } });
 
       res.json({
-        message: 'Files uploaded successfully!',
-        files: newFileNodes,
+        message: 'Files uploaded to Cloudinary successfully!',
+        files: uploadedFileNodes,
       });
     } else {
-      // Delete uploaded files if the parent folder is invalid
       files.forEach((file) => fs.unlinkSync(file.path));
-      res.status(400).json({ error: 'Parent folder not found or invalid.' });
+      return res.status(400).json({ error: 'Parent folder not found or invalid.' });
     }
   } catch (err) {
-    // Clean up uploaded files in case of an error
+    // Clean up files in case of an error
     files.forEach((file) => fs.unlinkSync(file.path));
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
+
 
 
 // Initialize root folder if not already present
